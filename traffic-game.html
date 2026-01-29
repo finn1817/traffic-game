@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Jam Manager - Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            display: flex;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 300px;
+            background: #16213e;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+
+        #gameCanvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #2d4a3e;
+        }
+
+        .stats {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .stat-label {
+            color: #aaa;
+        }
+
+        .stat-value {
+            color: #4ecca3;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #4ecca3;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+        }
+
+        .build-section {
+            margin-bottom: 20px;
+        }
+
+        .build-item {
+            background: #0f3460;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .build-item:hover {
+            background: #1a4d7a;
+            transform: translateX(5px);
+        }
+
+        .build-item.selected {
+            border-color: #4ecca3;
+            background: #1a4d7a;
+        }
+
+        .build-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .build-item.disabled:hover {
+            transform: none;
+            background: #0f3460;
+        }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .item-cost {
+            color: #ffd700;
+            font-size: 12px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #e74c3c;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(22, 33, 62, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            margin: 5px;
+            background: #0f3460;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .control-btn:hover {
+            background: #1a4d7a;
+        }
+
+        .info-box {
+            background: rgba(22, 33, 62, 0.95);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 10px;
+            border-left: 3px solid #4ecca3;
+        }
+
+        .mode-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(78, 204, 163, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: none;
+        }
+
+        #saveIndicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(78, 204, 163, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="sidebar">
+            <div class="stats">
+                <h2 style="margin-top: 0;">📊 Stats</h2>
+                <div class="stat-item">
+                    <span class="stat-label">💰 Money:</span>
+                    <span class="stat-value" id="moneyDisplay">$5000</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🛣️ Roads Built:</span>
+                    <span class="stat-value" id="roadsDisplay">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⏱️ Time Played:</span>
+                    <span class="stat-value" id="timeDisplay">0m</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🏢 Buildings:</span>
+                    <span class="stat-value" id="buildingsDisplay">2</span>
+                </div>
+            </div>
+
+            <h2>🛣️ Roads</h2>
+            <div class="build-section" id="roadsSection">
+                <div class="build-item" data-type="road" data-subtype="basic" data-cost="500">
+                    <div class="item-name">Basic Road</div>
+                    <div class="item-cost">💰 $500</div>
+                </div>
+                <div class="build-item" data-type="road" data-subtype="highway" data-cost="1500">
+                    <div class="item-name">Highway</div>
+                    <div class="item-cost">💰 $1500 (Wide)</div>
+                </div>
+                <div class="build-item" data-type="road" data-subtype="curved" data-cost="800">
+                    <div class="item-name">Curved Road</div>
+                    <div class="item-cost">💰 $800</div>
+                </div>
+            </div>
+
+            <h2>🏢 Buildings</h2>
+            <div class="build-section" id="buildingsSection">
+                <div class="build-item" data-type="building" data-subtype="house" data-cost="1000">
+                    <div class="item-name">🏠 House</div>
+                    <div class="item-cost">💰 $1000</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="shop" data-cost="2000">
+                    <div class="item-name">🏪 Shop</div>
+                    <div class="item-cost">💰 $2000</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="office" data-cost="3500">
+                    <div class="item-name">🏢 Office</div>
+                    <div class="item-cost">💰 $3500</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="school" data-cost="5000">
+                    <div class="item-name">🏫 School</div>
+                    <div class="item-cost">💰 $5000</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="hospital" data-cost="7500">
+                    <div class="item-name">🏥 Hospital</div>
+                    <div class="item-cost">💰 $7500</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="stadium" data-cost="15000">
+                    <div class="item-name">🏟️ Stadium</div>
+                    <div class="item-cost">💰 $15000</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="cityhall" data-cost="20000">
+                    <div class="item-name">🏛️ City Hall</div>
+                    <div class="item-cost">💰 $20000</div>
+                </div>
+                <div class="build-item" data-type="building" data-subtype="park" data-cost="2500">
+                    <div class="item-name">🌳 Park</div>
+                    <div class="item-cost">💰 $2500</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>💡 Tips:</strong><br>
+                • Click items to select<br>
+                • Click canvas to place<br>
+                • Right-click to delete<br>
+                • Earn $50 every 5 seconds!
+            </div>
+
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="gameCanvas">
+            <canvas id="canvas"></canvas>
+            <div class="controls">
+                <button class="control-btn" onclick="zoomIn()">🔍 +</button>
+                <button class="control-btn" onclick="zoomOut()">🔍 -</button>
+                <button class="control-btn" onclick="resetView()">🎯 Reset</button>
+                <button class="control-btn" onclick="saveGame()">💾 Save</button>
+            </div>
+            <div id="modeIndicator" class="mode-indicator">No item selected</div>
+            <div id="saveIndicator">Game Saved! ✓</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrMtnY0hXlZwpGAib2MmiOmyHRUk_hDc4",
+            authDomain: "file-transfer-c98a2.firebaseapp.com",
+            projectId: "file-transfer-c98a2",
+            storageBucket: "file-transfer-c98a2.firebasestorage.app",
+            messagingSenderId: "945533109103",
+            appId: "1:945533109103:web:7f98391abdab148af9de9a",
+            measurementId: "G-P2YXP42K48"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Check authentication
+        const username = localStorage.getItem('trafficGameUser');
+        if (!username) {
+            window.location.href = 'index.html';
+        }
+
+        // Game state
+        let gameState = {
+            money: 5000,
+            roadsBuilt: 1,
+            buildings: [],
+            roads: [],
+            cars: [],
+            timeStarted: new Date().toISOString()
+        };
+
+        let selectedTool = null;
+        let selectedCost = 0;
+        let camera = { x: 0, y: 0, zoom: 1 };
+        let isDragging = false;
+        let lastMousePos = { x: 0, y: 0 };
+
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            draw();
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Load game data
+        async function loadGameData() {
+            try {
+                const gameRef = doc(db, 'traffic-game', 'users', 'game-data', username);
+                const gameDoc = await getDoc(gameRef);
+
+                if (gameDoc.exists()) {
+                    const data = gameDoc.data();
+                    gameState.money = data.money || 5000;
+                    gameState.roadsBuilt = data.roadsBuilt || 1;
+                    gameState.timeStarted = data.timeStarted;
+                    
+                    if (data.gameState) {
+                        gameState.roads = data.gameState.roads || [];
+                        gameState.buildings = data.gameState.buildings || [];
+                    }
+
+                    // Initialize with starting road and buildings if empty
+                    if (gameState.roads.length === 0) {
+                        initializeStartingCity();
+                    }
+                    
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error loading game:', error);
+            }
+        }
+
+        function initializeStartingCity() {
+            // Starting curvy road from top to bottom
+            gameState.roads = [
+                { type: 'road', subtype: 'basic', x: 400, y: 50, width: 40, height: 150, rotation: 0 },
+                { type: 'road', subtype: 'curved', x: 400, y: 200, width: 40, height: 100, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 500, y: 280, width: 40, height: 150, rotation: 0 },
+                { type: 'road', subtype: 'curved', x: 500, y: 430, width: 40, height: 100, rotation: 180 },
+                { type: 'road', subtype: 'basic', x: 400, y: 510, width: 40, height: 150, rotation: 0 }
+            ];
+
+            // Starting buildings
+            gameState.buildings = [
+                { type: 'building', subtype: 'office', x: 350, y: 10, width: 60, height: 60 },
+                { type: 'building', subtype: 'house', x: 350, y: 630, width: 60, height: 60 }
+            ];
+
+            // Starting cars
+            gameState.cars = [
+                { x: 420, y: 100, speed: 2, direction: 1, lane: 0 },
+                { x: 420, y: 400, speed: 1.5, direction: 1, lane: 0 }
+            ];
+        }
+
+        // Save game
+        window.saveGame = async function() {
+            try {
+                const gameRef = doc(db, 'traffic-game', 'users', 'game-data', username);
+                await updateDoc(gameRef, {
+                    money: gameState.money,
+                    roadsBuilt: gameState.roadsBuilt,
+                    lastPlayed: new Date().toISOString(),
+                    gameState: {
+                        roads: gameState.roads,
+                        buildings: gameState.buildings
+                    }
+                });
+
+                const indicator = document.getElementById('saveIndicator');
+                indicator.style.display = 'block';
+                setTimeout(() => indicator.style.display = 'none', 2000);
+            } catch (error) {
+                console.error('Error saving game:', error);
+            }
+        };
+
+        // Auto-save every 30 seconds
+        setInterval(saveGame, 30000);
+
+        // Income generation (passive income)
+        setInterval(() => {
+            gameState.money += 50;
+            updateUI();
+        }, 5000);
+
+        // UI Updates
+        function updateUI() {
+            document.getElementById('moneyDisplay').textContent = '$' + gameState.money.toLocaleString();
+            document.getElementById('roadsDisplay').textContent = gameState.roadsBuilt;
+            document.getElementById('buildingsDisplay').textContent = gameState.buildings.length + 2;
+
+            // Calculate time played
+            const timeStarted = new Date(gameState.timeStarted);
+            const now = new Date();
+            const diffMs = now - timeStarted;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            let timeStr = '';
+            if (diffDays > 0) timeStr = `${diffDays}d ${diffHours % 24}h`;
+            else if (diffHours > 0) timeStr = `${diffHours}h ${diffMins % 60}m`;
+            else timeStr = `${diffMins}m`;
+
+            document.getElementById('timeDisplay').textContent = timeStr;
+
+            // Update build items affordability
+            document.querySelectorAll('.build-item').forEach(item => {
+                const cost = parseInt(item.dataset.cost);
+                if (gameState.money < cost) {
+                    item.classList.add('disabled');
+                } else {
+                    item.classList.remove('disabled');
+                }
+            });
+        }
+
+        // Tool selection
+        document.querySelectorAll('.build-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const cost = parseInt(this.dataset.cost);
+                if (gameState.money < cost) return;
+
+                document.querySelectorAll('.build-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+
+                selectedTool = {
+                    type: this.dataset.type,
+                    subtype: this.dataset.subtype,
+                    cost: cost
+                };
+                selectedCost = cost;
+
+                const modeIndicator = document.getElementById('modeIndicator');
+                modeIndicator.textContent = `Placing: ${this.querySelector('.item-name').textContent}`;
+                modeIndicator.style.display = 'block';
+            });
+        });
+
+        // Drawing functions
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(camera.x, camera.y);
+            ctx.scale(camera.zoom, camera.zoom);
+
+            // Draw grid
+            drawGrid();
+
+            // Draw roads
+            gameState.roads.forEach(road => {
+                ctx.fillStyle = '#333';
+                if (road.subtype === 'highway') {
+                    ctx.fillStyle = '#222';
+                }
+                
+                ctx.save();
+                ctx.translate(road.x + road.width/2, road.y + road.height/2);
+                ctx.rotate(road.rotation * Math.PI / 180);
+                ctx.fillRect(-road.width/2, -road.height/2, road.width, road.height);
+                
+                // Road markings
+                ctx.strokeStyle = '#ff0';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath();
+                ctx.moveTo(0, -road.height/2);
+                ctx.lineTo(0, road.height/2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.restore();
+            });
+
+            // Draw buildings
+            gameState.buildings.forEach(building => {
+                const colors = {
+                    house: '#8B4513',
+                    shop: '#4682B4',
+                    office: '#708090',
+                    school: '#DAA520',
+                    hospital: '#DC143C',
+                    stadium: '#32CD32',
+                    cityhall: '#9370DB',
+                    park: '#228B22'
+                };
+                
+                ctx.fillStyle = colors[building.subtype] || '#666';
+                ctx.fillRect(building.x, building.y, building.width, building.height);
+                
+                // Building details
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(building.x, building.y, building.width, building.height);
+                
+                // Windows
+                ctx.fillStyle = '#FFD700';
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < 2; j++) {
+                        ctx.fillRect(
+                            building.x + 10 + i * 25,
+                            building.y + 10 + j * 25,
+                            8, 8
+                        );
+                    }
+                }
+            });
+
+            // Draw and update cars
+            gameState.cars.forEach(car => {
+                ctx.fillStyle = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00'][Math.floor(Math.random() * 4)];
+                ctx.fillRect(car.x - 5, car.y - 8, 10, 16);
+                
+                // Update car position
+                car.y += car.speed * car.direction;
+                
+                // Reset car position when it goes off screen
+                if (car.y > 700) {
+                    car.y = 0;
+                } else if (car.y < 0) {
+                    car.y = 700;
+                }
+            });
+
+            ctx.restore();
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < 2000; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, 2000);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < 2000; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(2000, y);
+                ctx.stroke();
+            }
+        }
+
+        // Mouse events
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left - camera.x) / camera.zoom;
+            const mouseY = (e.clientY - rect.top - camera.y) / camera.zoom;
+
+            if (e.button === 0) { // Left click
+                if (selectedTool && gameState.money >= selectedCost) {
+                    placeItem(mouseX, mouseY);
+                } else {
+                    isDragging = true;
+                    lastMousePos = { x: e.clientX, y: e.clientY };
+                }
+            } else if (e.button === 2) { // Right click
+                deleteItem(mouseX, mouseY);
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                camera.x += e.clientX - lastMousePos.x;
+                camera.y += e.clientY - lastMousePos.y;
+                lastMousePos = { x: e.clientX, y: e.clientY };
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        function placeItem(x, y) {
+            if (selectedTool.type === 'road') {
+                const width = selectedTool.subtype === 'highway' ? 80 : 40;
+                const height = 100;
+                
+                gameState.roads.push({
+                    type: 'road',
+                    subtype: selectedTool.subtype,
+                    x: Math.floor(x / 50) * 50,
+                    y: Math.floor(y / 50) * 50,
+                    width: width,
+                    height: height,
+                    rotation: 0
+                });
+                
+                gameState.money -= selectedCost;
+                gameState.roadsBuilt++;
+                
+                // Add cars occasionally
+                if (Math.random() > 0.7) {
+                    gameState.cars.push({
+                        x: Math.floor(x / 50) * 50 + width/2,
+                        y: Math.floor(y / 50) * 50,
+                        speed: 1 + Math.random() * 2,
+                        direction: Math.random() > 0.5 ? 1 : -1,
+                        lane: 0
+                    });
+                }
+                
+            } else if (selectedTool.type === 'building') {
+                const sizes = {
+                    house: 50,
+                    shop: 60,
+                    office: 70,
+                    school: 80,
+                    hospital: 90,
+                    stadium: 120,
+                    cityhall: 100,
+                    park: 70
+                };
+                
+                const size = sizes[selectedTool.subtype] || 60;
+                
+                gameState.buildings.push({
+                    type: 'building',
+                    subtype: selectedTool.subtype,
+                    x: Math.floor(x / 50) * 50,
+                    y: Math.floor(y / 50) * 50,
+                    width: size,
+                    height: size
+                });
+                
+                gameState.money -= selectedCost;
+            }
+            
+            updateUI();
+            saveGame();
+        }
+
+        function deleteItem(x, y) {
+            // Check buildings
+            for (let i = gameState.buildings.length - 1; i >= 0; i--) {
+                const b = gameState.buildings[i];
+                if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height) {
+                    gameState.buildings.splice(i, 1);
+                    gameState.money -= 200; // Penalty
+                    updateUI();
+                    saveGame();
+                    return;
+                }
+            }
+            
+            // Check roads
+            for (let i = gameState.roads.length - 1; i >= 0; i--) {
+                const r = gameState.roads[i];
+                if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) {
+                    gameState.roads.splice(i, 1);
+                    gameState.roadsBuilt--;
+                    gameState.money -= 150; // Penalty
+                    updateUI();
+                    saveGame();
+                    return;
+                }
+            }
+        }
+
+        // Camera controls
+        window.zoomIn = function() {
+            camera.zoom = Math.min(camera.zoom * 1.2, 3);
+            draw();
+        };
+
+        window.zoomOut = function() {
+            camera.zoom = Math.max(camera.zoom / 1.2, 0.3);
+            draw();
+        };
+
+        window.resetView = function() {
+            camera = { x: 0, y: 0, zoom: 1 };
+            draw();
+        };
+
+        // Logout
+        window.logout = function() {
+            saveGame();
+            localStorage.removeItem('trafficGameUser');
+            window.location.href = 'index.html';
+        };
+
+        // Animation loop
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        loadGameData().then(() => {
+            animate();
+            updateUI();
+        });
+
+        // Update UI every second
+        setInterval(updateUI, 1000);
+    </script>
+</body>
+</html>

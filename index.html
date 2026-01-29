@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Jam Manager - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .toggle-form a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚦 Traffic Manager</h1>
+        <p class="subtitle">Build your dream city traffic system</p>
+        
+        <div id="error" class="error"></div>
+        <div id="success" class="success"></div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" required>
+            </div>
+            <button onclick="login()">Login</button>
+            <div class="toggle-form">
+                Don't have an account? <a href="#" onclick="toggleForm(); return false;">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" class="hidden">
+            <div class="form-group">
+                <label for="signupUsername">Username</label>
+                <input type="text" id="signupUsername" placeholder="Choose username" required>
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" placeholder="Choose password" required>
+            </div>
+            <div class="form-group">
+                <label for="signupConfirmPassword">Confirm Password</label>
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm password" required>
+            </div>
+            <button onclick="signup()">Sign Up</button>
+            <div class="toggle-form">
+                Already have an account? <a href="#" onclick="toggleForm(); return false;">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrMtnY0hXlZwpGAib2MmiOmyHRUk_hDc4",
+            authDomain: "file-transfer-c98a2.firebaseapp.com",
+            projectId: "file-transfer-c98a2",
+            storageBucket: "file-transfer-c98a2.firebasestorage.app",
+            messagingSenderId: "945533109103",
+            appId: "1:945533109103:web:7f98391abdab148af9de9a",
+            measurementId: "G-P2YXP42K48"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+
+        // Seed admin account on load
+        async function seedAdmin() {
+            const adminRef = doc(db, 'traffic-game', 'users', 'accounts', 'admin');
+            const adminDoc = await getDoc(adminRef);
+            
+            if (!adminDoc.exists()) {
+                await setDoc(adminRef, {
+                    username: 'admin',
+                    password: 'password1',
+                    createdAt: new Date().toISOString()
+                });
+                console.log('Admin account seeded');
+            }
+        }
+        seedAdmin();
+
+        window.toggleForm = function() {
+            document.getElementById('loginForm').classList.toggle('hidden');
+            document.getElementById('signupForm').classList.toggle('hidden');
+            hideMessages();
+        };
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 3000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 3000);
+        }
+
+        function hideMessages() {
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        window.login = async function() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const userRef = doc(db, 'traffic-game', 'users', 'accounts', username);
+                const userDoc = await getDoc(userRef);
+
+                if (!userDoc.exists()) {
+                    showError('User not found');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                if (userData.password !== password) {
+                    showError('Incorrect password');
+                    return;
+                }
+
+                // Check if game data exists, if not create it
+                const gameRef = doc(db, 'traffic-game', 'users', 'game-data', username);
+                const gameDoc = await getDoc(gameRef);
+
+                if (!gameDoc.exists()) {
+                    await setDoc(gameRef, {
+                        money: 5000,
+                        roadsBuilt: 1,
+                        timeStarted: new Date().toISOString(),
+                        lastPlayed: new Date().toISOString(),
+                        gameState: {
+                            roads: [],
+                            buildings: []
+                        }
+                    });
+                } else {
+                    // Update last played
+                    await setDoc(gameRef, {
+                        lastPlayed: new Date().toISOString()
+                    }, { merge: true });
+                }
+
+                localStorage.setItem('trafficGameUser', username);
+                showSuccess('Login successful! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = 'traffic_game.html';
+                }, 1000);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Login failed. Please try again.');
+            }
+        };
+
+        window.signup = async function() {
+            const username = document.getElementById('signupUsername').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            if (!username || !password || !confirmPassword) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError('Username must be at least 3 characters');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            try {
+                const userRef = doc(db, 'traffic-game', 'users', 'accounts', username);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    showError('Username already exists');
+                    return;
+                }
+
+                // Create user account
+                await setDoc(userRef, {
+                    username: username,
+                    password: password,
+                    createdAt: new Date().toISOString()
+                });
+
+                // Create initial game data
+                const gameRef = doc(db, 'traffic-game', 'users', 'game-data', username);
+                await setDoc(gameRef, {
+                    money: 5000,
+                    roadsBuilt: 1,
+                    timeStarted: new Date().toISOString(),
+                    lastPlayed: new Date().toISOString(),
+                    gameState: {
+                        roads: [],
+                        buildings: []
+                    }
+                });
+
+                showSuccess('Account created! You can now login.');
+                setTimeout(() => {
+                    toggleForm();
+                    document.getElementById('loginUsername').value = username;
+                }, 1500);
+
+            } catch (error) {
+                console.error('Signup error:', error);
+                showError('Signup failed. Please try again.');
+            }
+        };
+
+        // Enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                    login();
+                } else {
+                    signup();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
