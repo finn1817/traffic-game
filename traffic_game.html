@@ -93,6 +93,12 @@
             letter-spacing: 1px;
         }
 
+        .stat-subtext {
+            font-size: 11px;
+            color: #8bb;
+            margin-top: 2px;
+        }
+
         .stat-item {
             display: flex;
             justify-content: space-between;
@@ -368,6 +374,46 @@
             font-weight: 600;
         }
 
+        #toast {
+            position: absolute;
+            top: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 32, 39, 0.95);
+            border: 1px solid rgba(78, 204, 163, 0.4);
+            padding: 12px 22px;
+            border-radius: 30px;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            font-weight: 600;
+            z-index: 60;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(78, 204, 163, 0.15);
+            border: 1px solid rgba(78, 204, 163, 0.4);
+        }
+
+        .hint-bar {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 32, 39, 0.9);
+            border: 1px solid rgba(78, 204, 163, 0.3);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 12px;
+            z-index: 40;
+        }
+
         @keyframes slideDown {
             from {
                 transform: translateX(-50%) translateY(-100px);
@@ -395,6 +441,48 @@
             display: block;
             margin-bottom: 8px;
             font-size: 14px;
+        }
+
+        .objective-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .objective-item {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(78, 204, 163, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .objective-title {
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .objective-progress {
+            margin-top: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .objective-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecca3, #667eea);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .objective-meta {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #9fb;
         }
 
         /* Logout Button */
@@ -524,12 +612,39 @@
                         <span class="stat-value" id="carsDisplay">2</span>
                     </div>
                     <div class="stat-item">
+                        <span class="stat-label">👥 Population</span>
+                        <span class="stat-value" id="populationDisplay">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">⚡ Traffic Efficiency</span>
+                        <span class="stat-value" id="efficiencyDisplay">100%</span>
+                    </div>
+                    <div class="stat-item">
                         <span class="stat-label">⏱️ Play Time</span>
                         <span class="stat-value" id="timeDisplay">0m</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">💵 Income/5s</span>
-                        <span class="stat-value">+$50</span>
+                        <span class="stat-value" id="incomeDisplay">+$50</span>
+                    </div>
+                </div>
+
+                <div class="section-title">🎯 City Objectives</div>
+                <div class="build-section objective-list" id="objectives">
+                    <div class="objective-item">
+                        <div class="objective-title">🛣️ Build 6 Connected Roads</div>
+                        <div class="objective-progress"><div class="objective-bar" id="objRoads"></div></div>
+                        <div class="objective-meta" id="objRoadsText">0 / 6</div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-title">🏘️ Reach 120 Population</div>
+                        <div class="objective-progress"><div class="objective-bar" id="objPop"></div></div>
+                        <div class="objective-meta" id="objPopText">0 / 120</div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-title">⚡ Keep Efficiency Above 70%</div>
+                        <div class="objective-progress"><div class="objective-bar" id="objEff"></div></div>
+                        <div class="objective-meta" id="objEffText">100%</div>
                     </div>
                 </div>
 
@@ -706,11 +821,11 @@
                 <div class="info-box">
                     <strong>💡 Quick Guide</strong>
                     • Select an item from the menu<br>
-                    • Left-click on the map to place<br>
+                    • Left-click to place (press R to rotate roads)<br>
                     • Right-click to delete (penalty applies)<br>
                     • Drag to pan, scroll to zoom<br>
-                    • Build roads to connect buildings<br>
-                    • Earn $50 every 5 seconds automatically
+                    • Buildings must be near roads<br>
+                    • Income scales with population & shops
                 </div>
 
                 <button class="logout-btn" onclick="logout()">🚪 Logout & Save</button>
@@ -728,7 +843,12 @@
                 <div class="quick-stat">
                     🏢 <span class="quick-stat-value" id="topBuildingsDisplay">2</span>
                 </div>
+                <div class="quick-stat">
+                    ⚡ <span class="quick-stat-value" id="topEfficiencyDisplay">100%</span>
+                </div>
             </div>
+
+            <div class="hint-bar" id="hintBar">Goal: Build connected roads, place buildings near roads, keep efficiency above 70%.</div>
 
             <canvas id="canvas"></canvas>
 
@@ -745,6 +865,7 @@
 
             <div id="modeIndicator" class="mode-indicator">Select an item to place</div>
             <div id="saveIndicator">💾 Game Saved Successfully!</div>
+            <div id="toast"></div>
         </div>
     </div>
 
@@ -780,7 +901,11 @@
             buildings: [],
             roads: [],
             cars: [],
-            timeStarted: new Date().toISOString()
+            timeStarted: new Date().toISOString(),
+            population: 0,
+            efficiency: 100,
+            incomePerTick: 50,
+            objectivesCompleted: false
         };
 
         let selectedTool = null;
@@ -788,6 +913,8 @@
         let camera = { x: 100, y: 100, zoom: 1 };
         let isDragging = false;
         let lastMousePos = { x: 0, y: 0 };
+        let hoverGridPos = null;
+        let roadRotation = 0;
 
         // Canvas setup
         const canvas = document.getElementById('canvas');
@@ -815,7 +942,8 @@
                     const data = gameDoc.data();
                     gameState.money = data.money || 5000;
                     gameState.roadsBuilt = data.roadsBuilt || 1;
-                    gameState.timeStarted = data.timeStarted;
+                    gameState.timeStarted = data.timeStarted || new Date().toISOString();
+                    gameState.objectivesCompleted = data.objectivesCompleted || false;
                     
                     if (data.gameState) {
                         gameState.roads = data.gameState.roads || [];
@@ -825,7 +953,7 @@
                     if (gameState.roads.length === 0) {
                         initializeStartingCity();
                     }
-                    
+                    recalcCityStats();
                     updateUI();
                 }
             } catch (error) {
@@ -834,22 +962,17 @@
         }
 
         function initializeStartingCity() {
-            // Create a connected curvy road from top to bottom (S-shape)
+            // Create a fully connected S-shape road network on the grid
             gameState.roads = [
-                // Top vertical segment
                 { type: 'road', subtype: 'basic', x: 600, y: 50, width: 50, height: 200, rotation: 0 },
-                // Curve right
-                { type: 'road', subtype: 'intersection', x: 650, y: 250, width: 50, height: 50, rotation: 0 },
-                { type: 'road', subtype: 'basic', x: 700, y: 250, width: 150, height: 50, rotation: 90 },
-                // Curve down
-                { type: 'road', subtype: 'intersection', x: 850, y: 300, width: 50, height: 50, rotation: 0 },
-                { type: 'road', subtype: 'basic', x: 850, y: 350, width: 50, height: 150, rotation: 0 },
-                // Curve left
-                { type: 'road', subtype: 'intersection', x: 800, y: 500, width: 50, height: 50, rotation: 0 },
-                { type: 'road', subtype: 'basic', x: 650, y: 500, width: 150, height: 50, rotation: 90 },
-                // Final curve down
-                { type: 'road', subtype: 'intersection', x: 600, y: 550, width: 50, height: 50, rotation: 0 },
-                { type: 'road', subtype: 'basic', x: 600, y: 600, width: 50, height: 150, rotation: 0 }
+                { type: 'road', subtype: 'intersection', x: 600, y: 250, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 650, y: 250, width: 200, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'intersection', x: 850, y: 250, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 850, y: 300, width: 50, height: 200, rotation: 0 },
+                { type: 'road', subtype: 'intersection', x: 850, y: 500, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 650, y: 500, width: 200, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'intersection', x: 600, y: 500, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 600, y: 550, width: 50, height: 200, rotation: 0 }
             ];
 
             // Starting buildings positioned near the road
@@ -861,7 +984,7 @@
             // Starting cars on the road
             gameState.cars = [
                 { x: 625, y: 100, speed: 2, direction: 'down', color: '#FF5555' },
-                { x: 625, y: 300, speed: 1.8, direction: 'right', color: '#55FF55' },
+                { x: 700, y: 275, speed: 1.8, direction: 'right', color: '#55FF55' },
                 { x: 875, y: 400, speed: 1.5, direction: 'down', color: '#5555FF' },
                 { x: 725, y: 525, speed: 1.7, direction: 'left', color: '#FFFF55' }
             ];
@@ -874,6 +997,7 @@
                 await updateDoc(gameRef, {
                     money: gameState.money,
                     roadsBuilt: gameState.roadsBuilt,
+                    objectivesCompleted: gameState.objectivesCompleted,
                     lastPlayed: new Date().toISOString(),
                     gameState: {
                         roads: gameState.roads,
@@ -894,12 +1018,145 @@
 
         // Income generation
         setInterval(() => {
-            gameState.money += 50;
+            recalcCityStats();
+            gameState.money += gameState.incomePerTick;
             updateUI();
         }, 5000);
 
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function showToast(message, duration = 2200) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        function recalcCityStats() {
+            const populationMap = {
+                house: 10,
+                apartment: 35,
+                shop: 4,
+                office: 6,
+                mall: 10,
+                school: 0,
+                hospital: 0,
+                police: 0,
+                fire: 0,
+                stadium: 8,
+                cityhall: 5,
+                park: 2
+            };
+
+            const incomeMap = {
+                house: 5,
+                apartment: 12,
+                shop: 18,
+                office: 25,
+                mall: 60,
+                school: 0,
+                hospital: 0,
+                police: 0,
+                fire: 0,
+                stadium: 40,
+                cityhall: 50,
+                park: 0
+            };
+
+            let population = 0;
+            let income = 20;
+
+            gameState.buildings.forEach(building => {
+                population += populationMap[building.subtype] || 0;
+                income += incomeMap[building.subtype] || 0;
+            });
+
+            const roadCapacity = Math.max(1, Math.floor(gameState.roads.length * 2.5));
+            const congestion = gameState.cars.length / roadCapacity;
+            const efficiency = clamp(100 - Math.round(congestion * 18), 30, 100);
+
+            gameState.population = population;
+            gameState.incomePerTick = income;
+            gameState.efficiency = efficiency;
+            gameState.roadsBuilt = gameState.roads.length;
+        }
+
+        function rectsTouch(a, b, margin = 6) {
+            return !(
+                a.x + a.width < b.x - margin ||
+                a.x - margin > b.x + b.width ||
+                a.y + a.height < b.y - margin ||
+                a.y - margin > b.y + b.height
+            );
+        }
+
+        function rectsOverlap(a, b) {
+            return (
+                a.x < b.x + b.width &&
+                a.x + a.width > b.x &&
+                a.y < b.y + b.height &&
+                a.y + a.height > b.y
+            );
+        }
+
+        function overlapsExisting(x, y, width, height) {
+            const newRect = { x, y, width, height };
+            const roadOverlap = gameState.roads.some(road => rectsOverlap(newRect, road));
+            const buildingOverlap = gameState.buildings.some(building => rectsOverlap(newRect, building));
+            return roadOverlap || buildingOverlap;
+        }
+
+        function isConnectedRoad(x, y, width, height) {
+            if (gameState.roads.length === 0) return true;
+            const newRect = { x, y, width, height };
+            return gameState.roads.some(road => rectsTouch(newRect, road, 8));
+        }
+
+        function isNearRoad(x, y, width, height) {
+            if (gameState.roads.length === 0) return true;
+            const newRect = { x, y, width, height };
+            return gameState.roads.some(road => rectsTouch(newRect, road, 50));
+        }
+
+        function getRoadDimensions(subtype, rotation) {
+            const dimensions = {
+                basic: { width: 50, height: 200 },
+                highway: { width: 80, height: 200 },
+                intersection: { width: 50, height: 50 }
+            };
+
+            const base = dimensions[subtype] || { width: 50, height: 200 };
+            const rotated = rotation % 180 !== 0;
+            return rotated
+                ? { width: base.height, height: base.width }
+                : { width: base.width, height: base.height };
+        }
+
+        function getBuildingSize(subtype) {
+            const sizes = {
+                house: 60,
+                apartment: 80,
+                shop: 65,
+                office: 75,
+                mall: 100,
+                school: 85,
+                hospital: 95,
+                police: 70,
+                fire: 70,
+                stadium: 130,
+                cityhall: 110,
+                park: 75
+            };
+            return sizes[subtype] || 60;
+        }
+
         // UI Updates
         function updateUI() {
+            recalcCityStats();
             const moneyStr = '$' + gameState.money.toLocaleString();
             document.getElementById('moneyDisplay').textContent = moneyStr;
             document.getElementById('topMoneyDisplay').textContent = moneyStr;
@@ -912,6 +1169,10 @@
             document.getElementById('topBuildingsDisplay').textContent = buildingCount;
             
             document.getElementById('carsDisplay').textContent = gameState.cars.length;
+            document.getElementById('populationDisplay').textContent = gameState.population.toLocaleString();
+            document.getElementById('efficiencyDisplay').textContent = `${gameState.efficiency}%`;
+            document.getElementById('topEfficiencyDisplay').textContent = `${gameState.efficiency}%`;
+            document.getElementById('incomeDisplay').textContent = `+$${gameState.incomePerTick.toLocaleString()}`;
 
             // Calculate time played
             const timeStarted = new Date(gameState.timeStarted);
@@ -927,6 +1188,47 @@
             else timeStr = `${diffMins}m`;
 
             document.getElementById('timeDisplay').textContent = timeStr;
+
+            // Objective updates
+            const roadsTarget = 6;
+            const popTarget = 120;
+            const effTarget = 70;
+
+            const roadsProgress = clamp((gameState.roadsBuilt / roadsTarget) * 100, 0, 100);
+            const popProgress = clamp((gameState.population / popTarget) * 100, 0, 100);
+            const effProgress = clamp((gameState.efficiency / effTarget) * 100, 0, 100);
+
+            document.getElementById('objRoads').style.width = `${roadsProgress}%`;
+            document.getElementById('objPop').style.width = `${popProgress}%`;
+            document.getElementById('objEff').style.width = `${effProgress}%`;
+
+            document.getElementById('objRoadsText').textContent = `${gameState.roadsBuilt} / ${roadsTarget}`;
+            document.getElementById('objPopText').textContent = `${gameState.population} / ${popTarget}`;
+            document.getElementById('objEffText').textContent = `${gameState.efficiency}%`;
+
+            const allObjectivesMet =
+                gameState.roadsBuilt >= roadsTarget &&
+                gameState.population >= popTarget &&
+                gameState.efficiency >= effTarget;
+
+            if (allObjectivesMet && !gameState.objectivesCompleted) {
+                gameState.objectivesCompleted = true;
+                gameState.money += 5000;
+                showToast('Milestone complete! Bonus +$5,000');
+            }
+
+            const hintBar = document.getElementById('hintBar');
+            if (hintBar) {
+                if (gameState.roadsBuilt < roadsTarget) {
+                    hintBar.textContent = 'Build connected roads to expand your city.';
+                } else if (gameState.population < popTarget) {
+                    hintBar.textContent = 'Add residential buildings near roads to grow population.';
+                } else if (gameState.efficiency < effTarget) {
+                    hintBar.textContent = 'Traffic is heavy. Add more roads or reduce cars.';
+                } else {
+                    hintBar.textContent = 'Great work! Keep optimizing for higher income.';
+                }
+            }
 
             // Update build items
             document.querySelectorAll('.build-item').forEach(item => {
@@ -962,6 +1264,16 @@
             });
         });
 
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                selectedTool = null;
+                selectedCost = 0;
+                document.querySelectorAll('.build-item').forEach(i => i.classList.remove('selected'));
+                document.getElementById('modeIndicator').style.display = 'none';
+                showToast('Placement canceled');
+            }
+        });
+
         // Drawing functions
         function draw() {
             // Main canvas
@@ -974,6 +1286,31 @@
 
             // Draw enhanced grid
             drawGrid();
+
+            // Placement preview
+            if (selectedTool && hoverGridPos) {
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                const gridX = hoverGridPos.x;
+                const gridY = hoverGridPos.y;
+
+                if (selectedTool.type === 'road') {
+                    const dim = getRoadDimensions(selectedTool.subtype, roadRotation);
+                    ctx.fillStyle = '#4ecca3';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(gridX, gridY, dim.width, dim.height);
+                    ctx.strokeRect(gridX, gridY, dim.width, dim.height);
+                } else if (selectedTool.type === 'building') {
+                    const size = getBuildingSize(selectedTool.subtype);
+                    ctx.fillStyle = '#667eea';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(gridX, gridY, size, size);
+                    ctx.strokeRect(gridX, gridY, size, size);
+                }
+                ctx.restore();
+            }
 
             // Draw roads with better visuals
             gameState.roads.forEach(road => {
@@ -989,7 +1326,6 @@
                 }
                 
                 ctx.translate(road.x + road.width/2, road.y + road.height/2);
-                ctx.rotate(road.rotation * Math.PI / 180);
                 
                 // Road base
                 ctx.shadowColor = 'rgba(0,0,0,0.5)';
@@ -1207,12 +1543,28 @@
                 camera.y += e.clientY - lastMousePos.y;
                 lastMousePos = { x: e.clientX, y: e.clientY };
                 draw();
+                return;
             }
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left - camera.x) / camera.zoom;
+            const mouseY = (e.clientY - rect.top - camera.y) / camera.zoom;
+            const gridX = Math.floor(mouseX / 50) * 50;
+            const gridY = Math.floor(mouseY / 50) * 50;
+            hoverGridPos = { x: gridX, y: gridY };
+            draw();
         });
 
         canvas.addEventListener('mouseup', function() {
             isDragging = false;
             canvas.style.cursor = 'grab';
+        });
+
+        window.addEventListener('keydown', function(e) {
+            if (e.key.toLowerCase() === 'r') {
+                roadRotation = (roadRotation + 90) % 180;
+                draw();
+            }
         });
 
         canvas.addEventListener('contextmenu', function(e) {
@@ -1231,13 +1583,17 @@
             const gridY = Math.floor(y / 50) * 50;
             
             if (selectedTool.type === 'road') {
-                const dimensions = {
-                    basic: { width: 50, height: 200 },
-                    highway: { width: 80, height: 200 },
-                    intersection: { width: 50, height: 50 }
-                };
-                
-                const dim = dimensions[selectedTool.subtype] || { width: 50, height: 200 };
+                const dim = getRoadDimensions(selectedTool.subtype, roadRotation);
+
+                if (!isConnectedRoad(gridX, gridY, dim.width, dim.height)) {
+                    showToast('Roads must connect to existing roads.');
+                    return;
+                }
+
+                if (overlapsExisting(gridX, gridY, dim.width, dim.height)) {
+                    showToast('Space is occupied.');
+                    return;
+                }
                 
                 gameState.roads.push({
                     type: 'road',
@@ -1246,7 +1602,7 @@
                     y: gridY,
                     width: dim.width,
                     height: dim.height,
-                    rotation: 0
+                    rotation: roadRotation
                 });
                 
                 gameState.money -= selectedCost;
@@ -1266,22 +1622,17 @@
                 }
                 
             } else if (selectedTool.type === 'building') {
-                const sizes = {
-                    house: 60,
-                    apartment: 80,
-                    shop: 65,
-                    office: 75,
-                    mall: 100,
-                    school: 85,
-                    hospital: 95,
-                    police: 70,
-                    fire: 70,
-                    stadium: 130,
-                    cityhall: 110,
-                    park: 75
-                };
-                
-                const size = sizes[selectedTool.subtype] || 60;
+                const size = getBuildingSize(selectedTool.subtype);
+
+                if (!isNearRoad(gridX, gridY, size, size)) {
+                    showToast('Buildings must be placed near a road.');
+                    return;
+                }
+
+                if (overlapsExisting(gridX, gridY, size, size)) {
+                    showToast('Space is occupied.');
+                    return;
+                }
                 
                 gameState.buildings.push({
                     type: 'building',
@@ -1306,6 +1657,7 @@
                 if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height) {
                     gameState.buildings.splice(i, 1);
                     gameState.money -= 200;
+                    showToast('Building removed (-$200)');
                     updateUI();
                     saveGame();
                     return;
@@ -1319,6 +1671,7 @@
                     gameState.roads.splice(i, 1);
                     gameState.roadsBuilt--;
                     gameState.money -= 150;
+                    showToast('Road removed (-$150)');
                     updateUI();
                     saveGame();
                     return;
