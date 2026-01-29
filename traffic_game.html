@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Jam Manager - Game</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,8 +14,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             color: #fff;
             overflow: hidden;
         }
@@ -21,275 +23,736 @@
         #gameContainer {
             display: flex;
             height: 100vh;
-        }
-
-        #sidebar {
-            width: 300px;
-            background: #16213e;
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-        }
-
-        #gameCanvas {
-            flex: 1;
             position: relative;
-            overflow: hidden;
-            background: #2d4a3e;
         }
 
+        /* Enhanced Sidebar */
+        #sidebar {
+            width: 320px;
+            background: rgba(15, 32, 39, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0;
+            overflow-y: auto;
+            box-shadow: 4px 0 30px rgba(0,0,0,0.5);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(78, 204, 163, 0.5);
+            border-radius: 4px;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 3px solid #4ecca3;
+        }
+
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        /* Enhanced Stats */
         .stats {
-            background: #0f3460;
-            padding: 15px;
-            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            padding: 20px;
+            border-radius: 15px;
             margin-bottom: 20px;
+            border: 1px solid rgba(78, 204, 163, 0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .stats h2 {
+            color: #4ecca3;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .stat-item {
             display: flex;
             justify-content: space-between;
-            margin: 8px 0;
-            font-size: 14px;
+            align-items: center;
+            margin: 12px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .stat-item:hover {
+            transform: translateX(5px);
+            background: rgba(78, 204, 163, 0.1);
         }
 
         .stat-label {
-            color: #aaa;
+            color: #bbb;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .stat-value {
             color: #4ecca3;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 16px;
+            text-shadow: 0 0 10px rgba(78, 204, 163, 0.5);
         }
 
-        h2 {
+        .section-title {
             color: #4ecca3;
-            margin: 20px 0 10px 0;
-            font-size: 18px;
+            margin: 25px 0 15px 0;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(to bottom, #4ecca3, #667eea);
+            border-radius: 2px;
+        }
+
+        /* Enhanced Build Items */
         .build-section {
             margin-bottom: 20px;
         }
 
         .build-item {
-            background: #0f3460;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.6) 0%, rgba(26, 77, 122, 0.6) 100%);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .build-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(78, 204, 163, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .build-item:hover::before {
+            left: 100%;
         }
 
         .build-item:hover {
-            background: #1a4d7a;
-            transform: translateX(5px);
+            background: linear-gradient(135deg, rgba(26, 77, 122, 0.8) 0%, rgba(15, 52, 96, 0.8) 100%);
+            transform: translateX(8px) scale(1.02);
+            border-color: rgba(78, 204, 163, 0.3);
+            box-shadow: 0 8px 25px rgba(78, 204, 163, 0.3);
         }
 
         .build-item.selected {
             border-color: #4ecca3;
-            background: #1a4d7a;
+            background: linear-gradient(135deg, rgba(78, 204, 163, 0.3) 0%, rgba(102, 126, 234, 0.3) 100%);
+            box-shadow: 0 0 30px rgba(78, 204, 163, 0.5);
+            transform: translateX(8px) scale(1.05);
         }
 
         .build-item.disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            filter: grayscale(0.8);
         }
 
         .build-item.disabled:hover {
             transform: none;
-            background: #0f3460;
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.6) 0%, rgba(26, 77, 122, 0.6) 100%);
+            border-color: transparent;
+            box-shadow: none;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
         }
 
         .item-name {
             font-weight: 600;
-            margin-bottom: 5px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-icon {
+            font-size: 20px;
         }
 
         .item-cost {
             color: #ffd700;
-            font-size: 12px;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 12px;
-            background: #e74c3c;
-            border: none;
-            border-radius: 8px;
-            color: white;
+            font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
         }
 
-        .logout-btn:hover {
-            background: #c0392b;
+        .item-description {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* Enhanced Canvas Container */
+        #canvasContainer {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(78, 204, 163, 0.1) 0%, transparent 50%),
+                #1a2a3a;
         }
 
         canvas {
             display: block;
-            cursor: crosshair;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Enhanced Controls */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 32, 39, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(78, 204, 163, 0.3);
+            z-index: 50;
+        }
+
+        .quick-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 15px;
+            background: rgba(78, 204, 163, 0.1);
+            border-radius: 20px;
+        }
+
+        .quick-stat-value {
+            color: #4ecca3;
+            text-shadow: 0 0 10px rgba(78, 204, 163, 0.5);
         }
 
         .controls {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(22, 33, 62, 0.9);
-            padding: 15px;
-            border-radius: 10px;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
         }
 
         .control-btn {
-            padding: 8px 15px;
-            margin: 5px;
-            background: #0f3460;
-            border: none;
+            padding: 12px 18px;
+            background: rgba(15, 32, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(78, 204, 163, 0.3);
             color: white;
-            border-radius: 5px;
+            border-radius: 12px;
             cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .control-btn:hover {
-            background: #1a4d7a;
+            background: rgba(78, 204, 163, 0.2);
+            border-color: #4ecca3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 204, 163, 0.4);
         }
 
-        .info-box {
-            background: rgba(22, 33, 62, 0.95);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-top: 10px;
-            border-left: 3px solid #4ecca3;
+        .control-btn:active {
+            transform: translateY(0);
         }
 
+        /* Mode Indicator */
         .mode-indicator {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(78, 204, 163, 0.9);
-            padding: 10px 20px;
-            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(78, 204, 163, 0.95) 0%, rgba(102, 126, 234, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
             font-weight: 600;
             display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            animation: pulse 2s infinite;
         }
 
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(78, 204, 163, 0.4); }
+            50% { box-shadow: 0 8px 32px rgba(78, 204, 163, 0.8); }
+        }
+
+        /* Save Indicator */
         #saveIndicator {
             position: absolute;
-            top: 20px;
+            top: 100px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(78, 204, 163, 0.9);
-            padding: 10px 20px;
-            border-radius: 20px;
+            background: linear-gradient(135deg, #4ecca3 0%, #667eea 100%);
+            padding: 15px 30px;
+            border-radius: 50px;
             display: none;
+            animation: slideDown 0.5s ease-out;
+            box-shadow: 0 8px 32px rgba(78, 204, 163, 0.5);
+            font-weight: 600;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(78, 204, 163, 0.2) 100%);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 20px;
+            border-left: 4px solid #4ecca3;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #4ecca3;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+        }
+
+        /* Minimap */
+        .minimap {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 200px;
+            height: 150px;
+            background: rgba(15, 32, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(78, 204, 163, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 32, 39, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            border: 1px solid rgba(78, 204, 163, 0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(78, 204, 163, 0.3);
+            border-top: 5px solid #4ecca3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #4ecca3;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
+    <div id="loadingScreen">
+        <div class="loader"></div>
+        <div class="loading-text">Loading your city...</div>
+    </div>
+
     <div id="gameContainer">
         <div id="sidebar">
-            <div class="stats">
-                <h2 style="margin-top: 0;">📊 Stats</h2>
-                <div class="stat-item">
-                    <span class="stat-label">💰 Money:</span>
-                    <span class="stat-value" id="moneyDisplay">$5000</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">🛣️ Roads Built:</span>
-                    <span class="stat-value" id="roadsDisplay">1</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">⏱️ Time Played:</span>
-                    <span class="stat-value" id="timeDisplay">0m</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">🏢 Buildings:</span>
-                    <span class="stat-value" id="buildingsDisplay">2</span>
-                </div>
+            <div class="sidebar-header">
+                <h1>🚦 Traffic Manager</h1>
+                <p>Build • Expand • Optimize</p>
             </div>
 
-            <h2>🛣️ Roads</h2>
-            <div class="build-section" id="roadsSection">
-                <div class="build-item" data-type="road" data-subtype="basic" data-cost="500">
-                    <div class="item-name">Basic Road</div>
-                    <div class="item-cost">💰 $500</div>
+            <div class="sidebar-content">
+                <div class="stats">
+                    <h2>📊 Your Empire</h2>
+                    <div class="stat-item">
+                        <span class="stat-label">💰 Balance</span>
+                        <span class="stat-value" id="moneyDisplay">$5,000</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">🛣️ Roads</span>
+                        <span class="stat-value" id="roadsDisplay">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">🏢 Buildings</span>
+                        <span class="stat-value" id="buildingsDisplay">2</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">🚗 Vehicles</span>
+                        <span class="stat-value" id="carsDisplay">2</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">⏱️ Play Time</span>
+                        <span class="stat-value" id="timeDisplay">0m</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">💵 Income/5s</span>
+                        <span class="stat-value">+$50</span>
+                    </div>
                 </div>
-                <div class="build-item" data-type="road" data-subtype="highway" data-cost="1500">
-                    <div class="item-name">Highway</div>
-                    <div class="item-cost">💰 $1500 (Wide)</div>
-                </div>
-                <div class="build-item" data-type="road" data-subtype="curved" data-cost="800">
-                    <div class="item-name">Curved Road</div>
-                    <div class="item-cost">💰 $800</div>
-                </div>
-            </div>
 
-            <h2>🏢 Buildings</h2>
-            <div class="build-section" id="buildingsSection">
-                <div class="build-item" data-type="building" data-subtype="house" data-cost="1000">
-                    <div class="item-name">🏠 House</div>
-                    <div class="item-cost">💰 $1000</div>
+                <div class="section-title">🛣️ Road Network</div>
+                <div class="build-section" id="roadsSection">
+                    <div class="build-item" data-type="road" data-subtype="basic" data-cost="500">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">━</span>
+                                Basic Road
+                            </div>
+                            <div class="item-cost">💰 $500</div>
+                        </div>
+                        <div class="item-description">Standard 2-lane road for local traffic</div>
+                    </div>
+                    <div class="build-item" data-type="road" data-subtype="highway" data-cost="1500">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">═</span>
+                                Highway
+                            </div>
+                            <div class="item-cost">💰 $1,500</div>
+                        </div>
+                        <div class="item-description">4-lane highway for high-speed traffic</div>
+                    </div>
+                    <div class="build-item" data-type="road" data-subtype="intersection" data-cost="800">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">╋</span>
+                                Intersection
+                            </div>
+                            <div class="item-cost">💰 $800</div>
+                        </div>
+                        <div class="item-description">Crossroads for connecting multiple paths</div>
+                    </div>
                 </div>
-                <div class="build-item" data-type="building" data-subtype="shop" data-cost="2000">
-                    <div class="item-name">🏪 Shop</div>
-                    <div class="item-cost">💰 $2000</div>
-                </div>
-                <div class="build-item" data-type="building" data-subtype="office" data-cost="3500">
-                    <div class="item-name">🏢 Office</div>
-                    <div class="item-cost">💰 $3500</div>
-                </div>
-                <div class="build-item" data-type="building" data-subtype="school" data-cost="5000">
-                    <div class="item-name">🏫 School</div>
-                    <div class="item-cost">💰 $5000</div>
-                </div>
-                <div class="build-item" data-type="building" data-subtype="hospital" data-cost="7500">
-                    <div class="item-name">🏥 Hospital</div>
-                    <div class="item-cost">💰 $7500</div>
-                </div>
-                <div class="build-item" data-type="building" data-subtype="stadium" data-cost="15000">
-                    <div class="item-name">🏟️ Stadium</div>
-                    <div class="item-cost">💰 $15000</div>
-                </div>
-                <div class="build-item" data-type="building" data-subtype="cityhall" data-cost="20000">
-                    <div class="item-name">🏛️ City Hall</div>
-                    <div class="item-cost">💰 $20000</div>
-                </div>
-                <div class="build-item" data-type="building" data-subtype="park" data-cost="2500">
-                    <div class="item-name">🌳 Park</div>
-                    <div class="item-cost">💰 $2500</div>
-                </div>
-            </div>
 
-            <div class="info-box">
-                <strong>💡 Tips:</strong><br>
-                • Click items to select<br>
-                • Click canvas to place<br>
-                • Right-click to delete<br>
-                • Earn $50 every 5 seconds!
-            </div>
+                <div class="section-title">🏘️ Residential</div>
+                <div class="build-section">
+                    <div class="build-item" data-type="building" data-subtype="house" data-cost="1000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏠</span>
+                                Small House
+                            </div>
+                            <div class="item-cost">💰 $1,000</div>
+                        </div>
+                        <div class="item-description">Cozy home for your citizens</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="apartment" data-cost="3000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏢</span>
+                                Apartment
+                            </div>
+                            <div class="item-cost">💰 $3,000</div>
+                        </div>
+                        <div class="item-description">Multi-family housing complex</div>
+                    </div>
+                </div>
 
-            <button class="logout-btn" onclick="logout()">Logout</button>
+                <div class="section-title">🏪 Commercial</div>
+                <div class="build-section">
+                    <div class="build-item" data-type="building" data-subtype="shop" data-cost="2000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏪</span>
+                                Shop
+                            </div>
+                            <div class="item-cost">💰 $2,000</div>
+                        </div>
+                        <div class="item-description">Local retail store</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="office" data-cost="3500">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏢</span>
+                                Office Building
+                            </div>
+                            <div class="item-cost">💰 $3,500</div>
+                        </div>
+                        <div class="item-description">Corporate headquarters</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="mall" data-cost="8000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏬</span>
+                                Shopping Mall
+                            </div>
+                            <div class="item-cost">💰 $8,000</div>
+                        </div>
+                        <div class="item-description">Large shopping complex</div>
+                    </div>
+                </div>
+
+                <div class="section-title">🏛️ Public Services</div>
+                <div class="build-section">
+                    <div class="build-item" data-type="building" data-subtype="school" data-cost="5000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏫</span>
+                                School
+                            </div>
+                            <div class="item-cost">💰 $5,000</div>
+                        </div>
+                        <div class="item-description">Education facility for youth</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="hospital" data-cost="7500">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏥</span>
+                                Hospital
+                            </div>
+                            <div class="item-cost">💰 $7,500</div>
+                        </div>
+                        <div class="item-description">Medical care center</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="police" data-cost="6000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🚓</span>
+                                Police Station
+                            </div>
+                            <div class="item-cost">💰 $6,000</div>
+                        </div>
+                        <div class="item-description">Law enforcement headquarters</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="fire" data-cost="5500">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🚒</span>
+                                Fire Station
+                            </div>
+                            <div class="item-cost">💰 $5,500</div>
+                        </div>
+                        <div class="item-description">Emergency fire response</div>
+                    </div>
+                </div>
+
+                <div class="section-title">🎭 Entertainment</div>
+                <div class="build-section">
+                    <div class="build-item" data-type="building" data-subtype="park" data-cost="2500">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🌳</span>
+                                Park
+                            </div>
+                            <div class="item-cost">💰 $2,500</div>
+                        </div>
+                        <div class="item-description">Green space for recreation</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="stadium" data-cost="15000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏟️</span>
+                                Stadium
+                            </div>
+                            <div class="item-cost">💰 $15,000</div>
+                        </div>
+                        <div class="item-description">Sports & events venue</div>
+                    </div>
+                    <div class="build-item" data-type="building" data-subtype="cityhall" data-cost="20000">
+                        <div class="item-header">
+                            <div class="item-name">
+                                <span class="item-icon">🏛️</span>
+                                City Hall
+                            </div>
+                            <div class="item-cost">💰 $20,000</div>
+                        </div>
+                        <div class="item-description">Government headquarters</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Quick Guide</strong>
+                    • Select an item from the menu<br>
+                    • Left-click on the map to place<br>
+                    • Right-click to delete (penalty applies)<br>
+                    • Drag to pan, scroll to zoom<br>
+                    • Build roads to connect buildings<br>
+                    • Earn $50 every 5 seconds automatically
+                </div>
+
+                <button class="logout-btn" onclick="logout()">🚪 Logout & Save</button>
+            </div>
         </div>
 
-        <div id="gameCanvas">
-            <canvas id="canvas"></canvas>
-            <div class="controls">
-                <button class="control-btn" onclick="zoomIn()">🔍 +</button>
-                <button class="control-btn" onclick="zoomOut()">🔍 -</button>
-                <button class="control-btn" onclick="resetView()">🎯 Reset</button>
-                <button class="control-btn" onclick="saveGame()">💾 Save</button>
+        <div id="canvasContainer">
+            <div class="top-bar">
+                <div class="quick-stat">
+                    💰 <span class="quick-stat-value" id="topMoneyDisplay">$5,000</span>
+                </div>
+                <div class="quick-stat">
+                    🛣️ <span class="quick-stat-value" id="topRoadsDisplay">1</span>
+                </div>
+                <div class="quick-stat">
+                    🏢 <span class="quick-stat-value" id="topBuildingsDisplay">2</span>
+                </div>
             </div>
-            <div id="modeIndicator" class="mode-indicator">No item selected</div>
-            <div id="saveIndicator">Game Saved! ✓</div>
+
+            <canvas id="canvas"></canvas>
+
+            <div class="controls">
+                <button class="control-btn" onclick="zoomIn()">🔍 Zoom In</button>
+                <button class="control-btn" onclick="zoomOut()">🔍 Zoom Out</button>
+                <button class="control-btn" onclick="resetView()">🎯 Reset View</button>
+                <button class="control-btn" onclick="saveGame()">💾 Save Game</button>
+            </div>
+
+            <div class="minimap">
+                <canvas id="minimapCanvas"></canvas>
+            </div>
+
+            <div id="modeIndicator" class="mode-indicator">Select an item to place</div>
+            <div id="saveIndicator">💾 Game Saved Successfully!</div>
         </div>
     </div>
 
+    <div class="tooltip" id="tooltip"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCrMtnY0hXlZwpGAib2MmiOmyHRUk_hDc4",
@@ -322,17 +785,21 @@
 
         let selectedTool = null;
         let selectedCost = 0;
-        let camera = { x: 0, y: 0, zoom: 1 };
+        let camera = { x: 100, y: 100, zoom: 1 };
         let isDragging = false;
         let lastMousePos = { x: 0, y: 0 };
 
         // Canvas setup
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const minimapCanvas = document.getElementById('minimapCanvas');
+        const minimapCtx = minimapCanvas.getContext('2d');
 
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
+            minimapCanvas.width = 200;
+            minimapCanvas.height = 150;
             draw();
         }
         resizeCanvas();
@@ -355,7 +822,6 @@
                         gameState.buildings = data.gameState.buildings || [];
                     }
 
-                    // Initialize with starting road and buildings if empty
                     if (gameState.roads.length === 0) {
                         initializeStartingCity();
                     }
@@ -368,25 +834,36 @@
         }
 
         function initializeStartingCity() {
-            // Starting curvy road from top to bottom
+            // Create a connected curvy road from top to bottom (S-shape)
             gameState.roads = [
-                { type: 'road', subtype: 'basic', x: 400, y: 50, width: 40, height: 150, rotation: 0 },
-                { type: 'road', subtype: 'curved', x: 400, y: 200, width: 40, height: 100, rotation: 0 },
-                { type: 'road', subtype: 'basic', x: 500, y: 280, width: 40, height: 150, rotation: 0 },
-                { type: 'road', subtype: 'curved', x: 500, y: 430, width: 40, height: 100, rotation: 180 },
-                { type: 'road', subtype: 'basic', x: 400, y: 510, width: 40, height: 150, rotation: 0 }
+                // Top vertical segment
+                { type: 'road', subtype: 'basic', x: 600, y: 50, width: 50, height: 200, rotation: 0 },
+                // Curve right
+                { type: 'road', subtype: 'intersection', x: 650, y: 250, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 700, y: 250, width: 150, height: 50, rotation: 90 },
+                // Curve down
+                { type: 'road', subtype: 'intersection', x: 850, y: 300, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 850, y: 350, width: 50, height: 150, rotation: 0 },
+                // Curve left
+                { type: 'road', subtype: 'intersection', x: 800, y: 500, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 650, y: 500, width: 150, height: 50, rotation: 90 },
+                // Final curve down
+                { type: 'road', subtype: 'intersection', x: 600, y: 550, width: 50, height: 50, rotation: 0 },
+                { type: 'road', subtype: 'basic', x: 600, y: 600, width: 50, height: 150, rotation: 0 }
             ];
 
-            // Starting buildings
+            // Starting buildings positioned near the road
             gameState.buildings = [
-                { type: 'building', subtype: 'office', x: 350, y: 10, width: 60, height: 60 },
-                { type: 'building', subtype: 'house', x: 350, y: 630, width: 60, height: 60 }
+                { type: 'building', subtype: 'office', x: 520, y: 80, width: 70, height: 70 },
+                { type: 'building', subtype: 'house', x: 520, y: 650, width: 60, height: 60 }
             ];
 
-            // Starting cars
+            // Starting cars on the road
             gameState.cars = [
-                { x: 420, y: 100, speed: 2, direction: 1, lane: 0 },
-                { x: 420, y: 400, speed: 1.5, direction: 1, lane: 0 }
+                { x: 625, y: 100, speed: 2, direction: 'down', color: '#FF5555' },
+                { x: 625, y: 300, speed: 1.8, direction: 'right', color: '#55FF55' },
+                { x: 875, y: 400, speed: 1.5, direction: 'down', color: '#5555FF' },
+                { x: 725, y: 525, speed: 1.7, direction: 'left', color: '#FFFF55' }
             ];
         }
 
@@ -406,7 +883,7 @@
 
                 const indicator = document.getElementById('saveIndicator');
                 indicator.style.display = 'block';
-                setTimeout(() => indicator.style.display = 'none', 2000);
+                setTimeout(() => indicator.style.display = 'none', 2500);
             } catch (error) {
                 console.error('Error saving game:', error);
             }
@@ -415,7 +892,7 @@
         // Auto-save every 30 seconds
         setInterval(saveGame, 30000);
 
-        // Income generation (passive income)
+        // Income generation
         setInterval(() => {
             gameState.money += 50;
             updateUI();
@@ -423,9 +900,18 @@
 
         // UI Updates
         function updateUI() {
-            document.getElementById('moneyDisplay').textContent = '$' + gameState.money.toLocaleString();
+            const moneyStr = '$' + gameState.money.toLocaleString();
+            document.getElementById('moneyDisplay').textContent = moneyStr;
+            document.getElementById('topMoneyDisplay').textContent = moneyStr;
+            
             document.getElementById('roadsDisplay').textContent = gameState.roadsBuilt;
-            document.getElementById('buildingsDisplay').textContent = gameState.buildings.length + 2;
+            document.getElementById('topRoadsDisplay').textContent = gameState.roadsBuilt;
+            
+            const buildingCount = gameState.buildings.length;
+            document.getElementById('buildingsDisplay').textContent = buildingCount;
+            document.getElementById('topBuildingsDisplay').textContent = buildingCount;
+            
+            document.getElementById('carsDisplay').textContent = gameState.cars.length;
 
             // Calculate time played
             const timeStarted = new Date(gameState.timeStarted);
@@ -442,7 +928,7 @@
 
             document.getElementById('timeDisplay').textContent = timeStr;
 
-            // Update build items affordability
+            // Update build items
             document.querySelectorAll('.build-item').forEach(item => {
                 const cost = parseInt(item.dataset.cost);
                 if (gameState.money < cost) {
@@ -469,103 +955,187 @@
                 };
                 selectedCost = cost;
 
+                const itemName = this.querySelector('.item-name').textContent.trim();
                 const modeIndicator = document.getElementById('modeIndicator');
-                modeIndicator.textContent = `Placing: ${this.querySelector('.item-name').textContent}`;
+                modeIndicator.textContent = `🎯 Placing: ${itemName}`;
                 modeIndicator.style.display = 'block';
             });
         });
 
         // Drawing functions
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Main canvas
+            ctx.fillStyle = '#1a2a3a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             ctx.save();
             ctx.translate(camera.x, camera.y);
             ctx.scale(camera.zoom, camera.zoom);
 
-            // Draw grid
+            // Draw enhanced grid
             drawGrid();
 
-            // Draw roads
+            // Draw roads with better visuals
             gameState.roads.forEach(road => {
-                ctx.fillStyle = '#333';
+                ctx.save();
+                
+                // Base road color
                 if (road.subtype === 'highway') {
-                    ctx.fillStyle = '#222';
+                    ctx.fillStyle = '#1a1a1a';
+                } else if (road.subtype === 'intersection') {
+                    ctx.fillStyle = '#2a2a2a';
+                } else {
+                    ctx.fillStyle = '#2a2a2a';
                 }
                 
-                ctx.save();
                 ctx.translate(road.x + road.width/2, road.y + road.height/2);
                 ctx.rotate(road.rotation * Math.PI / 180);
+                
+                // Road base
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 10;
                 ctx.fillRect(-road.width/2, -road.height/2, road.width, road.height);
+                ctx.shadowBlur = 0;
+                
+                // Road borders
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(-road.width/2, -road.height/2, road.width, road.height);
                 
                 // Road markings
-                ctx.strokeStyle = '#ff0';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([10, 10]);
-                ctx.beginPath();
-                ctx.moveTo(0, -road.height/2);
-                ctx.lineTo(0, road.height/2);
-                ctx.stroke();
-                ctx.setLineDash([]);
+                if (road.subtype === 'highway') {
+                    // Double yellow lines for highway
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([15, 15]);
+                    ctx.beginPath();
+                    ctx.moveTo(-10, -road.height/2);
+                    ctx.lineTo(-10, road.height/2);
+                    ctx.moveTo(10, -road.height/2);
+                    ctx.lineTo(10, road.height/2);
+                    ctx.stroke();
+                } else if (road.subtype !== 'intersection') {
+                    // Dashed white line
+                    ctx.strokeStyle = '#FFF';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([10, 10]);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -road.height/2);
+                    ctx.lineTo(0, road.height/2);
+                    ctx.stroke();
+                }
                 
+                ctx.setLineDash([]);
                 ctx.restore();
             });
 
-            // Draw buildings
+            // Draw buildings with better visuals
             gameState.buildings.forEach(building => {
                 const colors = {
                     house: '#8B4513',
+                    apartment: '#A0522D',
                     shop: '#4682B4',
                     office: '#708090',
+                    mall: '#5F9EA0',
                     school: '#DAA520',
                     hospital: '#DC143C',
+                    police: '#000080',
+                    fire: '#FF4500',
                     stadium: '#32CD32',
                     cityhall: '#9370DB',
                     park: '#228B22'
                 };
                 
+                ctx.save();
+                
+                // Building shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = 5;
+                
+                // Building base
                 ctx.fillStyle = colors[building.subtype] || '#666';
                 ctx.fillRect(building.x, building.y, building.width, building.height);
                 
-                // Building details
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                
+                // Building outline
                 ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.strokeRect(building.x, building.y, building.width, building.height);
                 
                 // Windows
                 ctx.fillStyle = '#FFD700';
-                for (let i = 0; i < 2; i++) {
-                    for (let j = 0; j < 2; j++) {
-                        ctx.fillRect(
-                            building.x + 10 + i * 25,
-                            building.y + 10 + j * 25,
-                            8, 8
-                        );
+                const windowSize = 8;
+                const windowGap = 15;
+                const cols = Math.floor((building.width - 20) / windowGap);
+                const rows = Math.floor((building.height - 20) / windowGap);
+                
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        const wx = building.x + 10 + i * windowGap;
+                        const wy = building.y + 10 + j * windowGap;
+                        ctx.fillRect(wx, wy, windowSize, windowSize);
                     }
                 }
+                
+                // Roof detail
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(building.x, building.y, building.width, 10);
+                
+                ctx.restore();
             });
 
             // Draw and update cars
             gameState.cars.forEach(car => {
-                ctx.fillStyle = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00'][Math.floor(Math.random() * 4)];
-                ctx.fillRect(car.x - 5, car.y - 8, 10, 16);
+                ctx.save();
                 
-                // Update car position
-                car.y += car.speed * car.direction;
+                // Car shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = 5;
                 
-                // Reset car position when it goes off screen
-                if (car.y > 700) {
-                    car.y = 0;
-                } else if (car.y < 0) {
-                    car.y = 700;
+                // Car body
+                ctx.fillStyle = car.color;
+                ctx.fillRect(car.x - 8, car.y - 12, 16, 24);
+                
+                // Car windows
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(car.x - 6, car.y - 8, 12, 8);
+                
+                // Car lights
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(car.x - 6, car.y + 8, 5, 3);
+                ctx.fillRect(car.x + 1, car.y + 8, 5, 3);
+                
+                ctx.restore();
+                
+                // Update car position based on direction
+                if (car.direction === 'down') {
+                    car.y += car.speed;
+                    if (car.y > 800) car.y = 0;
+                } else if (car.direction === 'up') {
+                    car.y -= car.speed;
+                    if (car.y < 0) car.y = 800;
+                } else if (car.direction === 'right') {
+                    car.x += car.speed;
+                    if (car.x > 1200) car.x = 0;
+                } else if (car.direction === 'left') {
+                    car.x -= car.speed;
+                    if (car.x < 0) car.x = 1200;
                 }
             });
 
             ctx.restore();
+            
+            // Draw minimap
+            drawMinimap();
         }
 
         function drawGrid() {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.strokeStyle = 'rgba(78, 204, 163, 0.1)';
             ctx.lineWidth = 1;
             
             for (let x = 0; x < 2000; x += 50) {
@@ -583,20 +1153,50 @@
             }
         }
 
+        function drawMinimap() {
+            minimapCtx.fillStyle = '#0a1520';
+            minimapCtx.fillRect(0, 0, 200, 150);
+            
+            const scale = 0.1;
+            
+            // Draw roads on minimap
+            minimapCtx.fillStyle = '#555';
+            gameState.roads.forEach(road => {
+                minimapCtx.fillRect(road.x * scale, road.y * scale, road.width * scale, road.height * scale);
+            });
+            
+            // Draw buildings on minimap
+            minimapCtx.fillStyle = '#4ecca3';
+            gameState.buildings.forEach(building => {
+                minimapCtx.fillRect(building.x * scale, building.y * scale, building.width * scale, building.height * scale);
+            });
+            
+            // Draw viewport
+            const viewX = -camera.x / camera.zoom * scale;
+            const viewY = -camera.y / camera.zoom * scale;
+            const viewW = canvas.width / camera.zoom * scale;
+            const viewH = canvas.height / camera.zoom * scale;
+            
+            minimapCtx.strokeStyle = '#4ecca3';
+            minimapCtx.lineWidth = 2;
+            minimapCtx.strokeRect(viewX, viewY, viewW, viewH);
+        }
+
         // Mouse events
         canvas.addEventListener('mousedown', function(e) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = (e.clientX - rect.left - camera.x) / camera.zoom;
             const mouseY = (e.clientY - rect.top - camera.y) / camera.zoom;
 
-            if (e.button === 0) { // Left click
+            if (e.button === 0) {
                 if (selectedTool && gameState.money >= selectedCost) {
                     placeItem(mouseX, mouseY);
                 } else {
                     isDragging = true;
+                    canvas.style.cursor = 'grabbing';
                     lastMousePos = { x: e.clientX, y: e.clientY };
                 }
-            } else if (e.button === 2) { // Right click
+            } else if (e.button === 2) {
                 deleteItem(mouseX, mouseY);
             }
         });
@@ -612,24 +1212,40 @@
 
         canvas.addEventListener('mouseup', function() {
             isDragging = false;
+            canvas.style.cursor = 'grab';
         });
 
         canvas.addEventListener('contextmenu', function(e) {
             e.preventDefault();
         });
 
+        canvas.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            camera.zoom = Math.max(0.3, Math.min(3, camera.zoom * zoomFactor));
+            draw();
+        });
+
         function placeItem(x, y) {
+            const gridX = Math.floor(x / 50) * 50;
+            const gridY = Math.floor(y / 50) * 50;
+            
             if (selectedTool.type === 'road') {
-                const width = selectedTool.subtype === 'highway' ? 80 : 40;
-                const height = 100;
+                const dimensions = {
+                    basic: { width: 50, height: 200 },
+                    highway: { width: 80, height: 200 },
+                    intersection: { width: 50, height: 50 }
+                };
+                
+                const dim = dimensions[selectedTool.subtype] || { width: 50, height: 200 };
                 
                 gameState.roads.push({
                     type: 'road',
                     subtype: selectedTool.subtype,
-                    x: Math.floor(x / 50) * 50,
-                    y: Math.floor(y / 50) * 50,
-                    width: width,
-                    height: height,
+                    x: gridX,
+                    y: gridY,
+                    width: dim.width,
+                    height: dim.height,
                     rotation: 0
                 });
                 
@@ -637,26 +1253,32 @@
                 gameState.roadsBuilt++;
                 
                 // Add cars occasionally
-                if (Math.random() > 0.7) {
+                if (Math.random() > 0.6) {
+                    const colors = ['#FF5555', '#55FF55', '#5555FF', '#FFFF55', '#FF55FF', '#55FFFF'];
+                    const directions = ['up', 'down', 'left', 'right'];
                     gameState.cars.push({
-                        x: Math.floor(x / 50) * 50 + width/2,
-                        y: Math.floor(y / 50) * 50,
+                        x: gridX + dim.width/2,
+                        y: gridY + dim.height/2,
                         speed: 1 + Math.random() * 2,
-                        direction: Math.random() > 0.5 ? 1 : -1,
-                        lane: 0
+                        direction: directions[Math.floor(Math.random() * directions.length)],
+                        color: colors[Math.floor(Math.random() * colors.length)]
                     });
                 }
                 
             } else if (selectedTool.type === 'building') {
                 const sizes = {
-                    house: 50,
-                    shop: 60,
-                    office: 70,
-                    school: 80,
-                    hospital: 90,
-                    stadium: 120,
-                    cityhall: 100,
-                    park: 70
+                    house: 60,
+                    apartment: 80,
+                    shop: 65,
+                    office: 75,
+                    mall: 100,
+                    school: 85,
+                    hospital: 95,
+                    police: 70,
+                    fire: 70,
+                    stadium: 130,
+                    cityhall: 110,
+                    park: 75
                 };
                 
                 const size = sizes[selectedTool.subtype] || 60;
@@ -664,8 +1286,8 @@
                 gameState.buildings.push({
                     type: 'building',
                     subtype: selectedTool.subtype,
-                    x: Math.floor(x / 50) * 50,
-                    y: Math.floor(y / 50) * 50,
+                    x: gridX,
+                    y: gridY,
                     width: size,
                     height: size
                 });
@@ -683,7 +1305,7 @@
                 const b = gameState.buildings[i];
                 if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height) {
                     gameState.buildings.splice(i, 1);
-                    gameState.money -= 200; // Penalty
+                    gameState.money -= 200;
                     updateUI();
                     saveGame();
                     return;
@@ -696,7 +1318,7 @@
                 if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) {
                     gameState.roads.splice(i, 1);
                     gameState.roadsBuilt--;
-                    gameState.money -= 150; // Penalty
+                    gameState.money -= 150;
                     updateUI();
                     saveGame();
                     return;
@@ -716,7 +1338,7 @@
         };
 
         window.resetView = function() {
-            camera = { x: 0, y: 0, zoom: 1 };
+            camera = { x: 100, y: 100, zoom: 1 };
             draw();
         };
 
@@ -734,10 +1356,21 @@
         }
 
         // Initialize
-        loadGameData().then(() => {
+        async function init() {
+            await loadGameData();
             animate();
             updateUI();
-        });
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 500);
+            }, 1000);
+        }
+
+        init();
 
         // Update UI every second
         setInterval(updateUI, 1000);
